@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import cv2
 import base64
-from predictor import predict_sign  # Ensure this import works
+from predictor import predict_sign
 from camera_component import camera_input
 
 st.set_page_config(page_title="Hand Sign Language Translator", layout="wide")

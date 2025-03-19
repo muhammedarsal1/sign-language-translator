@@ -28,7 +28,7 @@ if not os.path.exists(MODEL_PATH):
 
 # Load model with error handling
 try:
-    model = tf.keras.models.load_model(MODEL_PATH, compile=False)  # Avoid compiling if metrics are missing
+    model = tf.keras.models.load_model(MODEL_PATH, compile=False)
     print("✅ Model loaded successfully!")
 except Exception as e:
     print(f"❌ Error loading model: {e}")
