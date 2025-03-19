@@ -5,29 +5,12 @@ import base64
 from predictor import predict_sign
 from camera_component import camera_input
 
-def process_image(image_data):
-    """Convert image data to numpy array for processing."""
-    try:
-        if isinstance(image_data, str):  # Base64 from camera_component
-            image_bytes = base64.b64decode(image_data.split(',')[1])
-            image_array = np.frombuffer(image_bytes, dtype=np.uint8)
-            image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
-        elif isinstance(image_data, bytes):  # Uploaded file data
-            image = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
-        else:
-            raise ValueError("Unsupported image format.")
-        
-        image = cv2.resize(image, (64, 64))  # Resize for model input
-        return image
-    except Exception as e:
-        st.error(f"❌ Error processing image: {e}")
-        return None
-
 st.set_page_config(page_title="Hand Sign Language Translator", layout="wide")
-st.title("🤟 Hand Sign Language Translator")
-st.write("Use 'Image' for a single sign or 'Live' for continuous translation.")
 
-# ✅ Buttons for Image, Live, Translate, and Clear
+st.title("🤟 Hand Sign Language Translator")
+st.write("Use 'Image' for a single sign or 'Live' for real-time translation.")
+
+# ✅ Buttons: Image, Live, Translate, Clear
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     image_mode = st.button("🖼 Image")
@@ -38,32 +21,52 @@ with col3:
 with col4:
     clear_mode = st.button("🗑 Clear")
 
-# ✅ Session State Management
-if "captured_image" not in st.session_state:
-    st.session_state.captured_image = None
-if "video_frame" not in st.session_state:
-    st.session_state.video_frame = None
-if "prediction" not in st.session_state:
-    st.session_state.prediction = None
+# ✅ Initialize Session State
+for key in ["captured_image", "video_frame", "prediction"]:
+    if key not in st.session_state:
+        st.session_state[key] = None
 
-# ✅ Image Mode: Capture a single image
+# ✅ Process Image Data
+def process_image(image_data):
+    """Convert uploaded image or video frame to a valid format for AI model."""
+    try:
+        if isinstance(image_data, str):  # Base64 from camera_component
+            image_bytes = base64.b64decode(image_data.split(',')[1])
+            image_array = np.frombuffer(image_bytes, dtype=np.uint8)
+            image = cv2.imdecode(image_array, cv2.IMREAD_COLOR)
+        elif isinstance(image_data, bytes):  # Uploaded image
+            image = cv2.imdecode(np.frombuffer(image_data, np.uint8), cv2.IMREAD_COLOR)
+        else:
+            raise ValueError("Unsupported image format.")
+
+        if image is None:
+            raise ValueError("Invalid image format. Could not decode.")
+
+        image = cv2.resize(image, (64, 64))  # Resize for AI model
+        return image
+    except Exception as e:
+        st.error(f"❌ Error processing image: {e}")
+        return None
+
+# ✅ Image Mode: Capture Image
 if image_mode:
-    st.write("📸 Capture a hand sign image.")
+    st.write("📸 Upload an image to translate a hand sign.")
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     if uploaded_image:
         st.session_state.captured_image = uploaded_image.read()
         st.image(uploaded_image, caption="Captured Image", use_container_width=True)
 
-# ✅ Live Mode: Continuous video translation
+# ✅ Live Mode: Real-time Video Translation
 if live_mode:
     st.write("🎥 Showing live video feed...")
     video_frame = camera_input()
     if video_frame:
         st.session_state.video_frame = video_frame
-        st.image(video_frame, caption="Live Frame", use_container_width=True)
+        st.image(video_frame, caption="Live Video Frame", use_container_width=True)
 
-# ✅ Translate Button: Works for both Image & Live Video
+# ✅ Translate Button
 if translate_mode:
+    st.write("🔍 Checking session state before translation...")
     if st.session_state.captured_image:
         processed_image = process_image(st.session_state.captured_image)
         if processed_image is not None:
@@ -78,9 +81,8 @@ if translate_mode:
 if st.session_state.prediction:
     st.subheader(f"🔠 Translated Sign: **{st.session_state.prediction}**")
 
-# ✅ Clear Button: Resets everything
+# ✅ Clear Button
 if clear_mode:
-    st.session_state.captured_image = None
-    st.session_state.video_frame = None
-    st.session_state.prediction = None
-    st.rerun()
+    for key in ["captured_image", "video_frame", "prediction"]:
+        st.session_state[key] = None
+    st.success("🗑 Data Cleared!")

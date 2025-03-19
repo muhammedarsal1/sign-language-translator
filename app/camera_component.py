@@ -1,7 +1,7 @@
 import streamlit.components.v1 as components
 
 def camera_input():
-    """JavaScript-based camera input for real-time video."""
+    """JavaScript-based camera feed for capturing images or real-time video."""
     camera_html = """
     <script>
         let video = document.createElement('video');
@@ -15,7 +15,7 @@ def camera_input():
         video.style.width = '100%';
         video.style.height = 'auto';
 
-        captureButton.innerText = 'Capture Image';
+        captureButton.innerText = 'Capture';
         captureButton.style.margin = '10px';
 
         captureButton.onclick = function() {
@@ -33,7 +33,7 @@ def camera_input():
                 document.getElementById('camera-container').appendChild(captureButton);
             })
             .catch(error => {
-                document.getElementById("camera-container").innerText = "🚨 Camera not accessible. Please enable permissions.";
+                console.error("🚨 Camera not accessible:", error);
             });
     </script>
     <div id="camera-container"></div>
