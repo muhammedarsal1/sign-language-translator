@@ -1,26 +1,32 @@
-import os
 import gdown
+import os
 import tensorflow as tf
-import numpy as np
-import json
 
+# Google Drive File ID
+DRIVE_FILE_ID = "1dVdZ1nYpd6l8_aV9u0NrDnr1xWDtWquD"
 MODEL_PATH = "model/sign_model.h5"
-LABELS_PATH = "model/labels.json"
-DRIVE_FILE_ID = "1dVdZ1nYpd6l8_aV9u0NrDnr1xWDtWquD"  # Update this if needed
 
-# Ensure the model exists, or download it
+# Ensure model directory exists
+os.makedirs("model", exist_ok=True)
+
+# Check if model exists, if not, download from Google Drive
 if not os.path.exists(MODEL_PATH):
-    os.makedirs("model", exist_ok=True)
     print("Downloading model from Google Drive...")
-    gdown.download(f"https://drive.google.com/uc?id={DRIVE_FILE_ID}", MODEL_PATH, quiet=False)
+    url = f"https://drive.google.com/uc?id={DRIVE_FILE_ID}"
+    try:
+        gdown.download(url, MODEL_PATH, quiet=False)
+        print("✅ Model download complete!")
+    except Exception as e:
+        print(f"❌ Model download failed: {e}")
 
-# Load model and labels
+# Load the trained model
 model = tf.keras.models.load_model(MODEL_PATH)
-with open(LABELS_PATH, "r") as file:
-    labels = json.load(file)
 
+# Prediction function
 def predict_sign(image):
-    image = image / 255.0
-    image = image.reshape(1, 64, 64, 3)
+    """Predict the hand sign from an image."""
+    image = image / 255.0  # Normalize image
+    image = image.reshape(1, 64, 64, 3)  # Ensure shape matches model input
     predictions = model.predict(image, verbose=0)
-    return labels[str(predictions.argmax())]
+    predicted_index = predictions.argmax()
+    return predicted_index
