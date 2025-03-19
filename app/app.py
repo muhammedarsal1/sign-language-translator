@@ -2,7 +2,7 @@ import streamlit as st
 import numpy as np
 import cv2
 import base64
-from predictor import predict_sign
+from predictor import predict_sign  # Ensure this import works
 from camera_component import camera_input
 
 st.set_page_config(page_title="Hand Sign Language Translator", layout="wide")
@@ -10,7 +10,7 @@ st.set_page_config(page_title="Hand Sign Language Translator", layout="wide")
 st.title("🤟 Hand Sign Language Translator")
 st.write("Use 'Image' for a single sign or 'Live' for real-time translation.")
 
-# ✅ Buttons: Image, Live, Translate, Clear
+# Buttons: Image, Live, Translate, Clear
 col1, col2, col3, col4 = st.columns(4)
 with col1:
     image_mode = st.button("🖼 Image")
@@ -21,12 +21,12 @@ with col3:
 with col4:
     clear_mode = st.button("🗑 Clear")
 
-# ✅ Initialize Session State
+# Initialize Session State
 for key in ["captured_image", "video_frame", "prediction"]:
     if key not in st.session_state:
         st.session_state[key] = None
 
-# ✅ Process Image Data
+# Process Image Data
 def process_image(image_data):
     """Convert uploaded image or video frame to a valid format for AI model."""
     try:
@@ -48,7 +48,7 @@ def process_image(image_data):
         st.error(f"❌ Error processing image: {e}")
         return None
 
-# ✅ Image Mode: Capture Image
+# Image Mode: Capture Image
 if image_mode:
     st.write("📸 Upload an image to translate a hand sign.")
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
@@ -56,7 +56,7 @@ if image_mode:
         st.session_state.captured_image = uploaded_image.read()
         st.image(uploaded_image, caption="Captured Image", use_container_width=True)
 
-# ✅ Live Mode: Real-time Video Translation
+# Live Mode: Real-time Video Translation
 if live_mode:
     st.write("🎥 Showing live video feed...")
     video_frame = camera_input()
@@ -64,24 +64,32 @@ if live_mode:
         st.session_state.video_frame = video_frame
         st.image(video_frame, caption="Live Video Frame", use_container_width=True)
 
-# ✅ Translate Button
+# Translate Button
 if translate_mode:
     st.write("🔍 Checking session state before translation...")
     if st.session_state.captured_image:
         processed_image = process_image(st.session_state.captured_image)
         if processed_image is not None:
-            st.session_state.prediction = predict_sign(processed_image)
+            prediction = predict_sign(processed_image)
+            if prediction:
+                st.session_state.prediction = prediction
+            else:
+                st.error("⚠️ Prediction failed. Please try again.")
     elif st.session_state.video_frame:
         processed_image = process_image(st.session_state.video_frame)
         if processed_image is not None:
-            st.session_state.prediction = predict_sign(processed_image)
+            prediction = predict_sign(processed_image)
+            if prediction:
+                st.session_state.prediction = prediction
+            else:
+                st.error("⚠️ Prediction failed. Please try again.")
     else:
         st.error("⚠️ No image or video frame captured. Please try again.")
 
 if st.session_state.prediction:
     st.subheader(f"🔠 Translated Sign: **{st.session_state.prediction}**")
 
-# ✅ Clear Button
+# Clear Button
 if clear_mode:
     for key in ["captured_image", "video_frame", "prediction"]:
         st.session_state[key] = None
