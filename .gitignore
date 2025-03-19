@@ -1,0 +1,9 @@
+# Ignore virtual environments and system files
+venv/
+__pycache__/
+*.pyd
+*.dll
+*.h5
+*.jpg
+*.png
+*.mp4
