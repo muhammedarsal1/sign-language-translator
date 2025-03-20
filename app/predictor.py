@@ -1,10 +1,9 @@
 import os
 import gdown
 import tensorflow as tf
-import h5py
-import cv2
 import numpy as np
 import json
+import cv2
 
 # Define paths
 MODEL_PATH = "model/sign_model.h5"
@@ -46,10 +45,20 @@ except Exception as e:
 def predict_sign(image):
     """Predict hand sign from processed image."""
     try:
+        if image is None or image.shape != (64, 64, 3):
+            raise ValueError("Invalid image shape. Expected (64, 64, 3).")
+
         image = image / 255.0
         image = image.reshape(1, 64, 64, 3)
         predictions = model.predict(image, verbose=0)
-        predicted_label = list(labels.keys())[predictions.argmax()]
+        predicted_index = predictions.argmax()
+
+        # Ensure labels are retrieved correctly
+        label_keys = list(labels.keys())
+        if predicted_index >= len(label_keys):
+            raise ValueError(f"Prediction index {predicted_index} out of range.")
+
+        predicted_label = label_keys[predicted_index]
         return predicted_label
     except Exception as e:
         print(f"❌ Error during prediction: {e}")

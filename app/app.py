@@ -54,41 +54,38 @@ if image_mode:
     uploaded_image = st.file_uploader("Upload an image", type=["jpg", "png", "jpeg"])
     if uploaded_image:
         st.session_state.captured_image = uploaded_image.read()
-        st.image(uploaded_image, caption="Captured Image", use_container_width=True)
+        st.image(uploaded_image, caption="Captured Image", width=300)
 
 # Live Mode: Real-time Video Translation
 if live_mode:
     st.write("🎥 Showing live video feed...")
     video_frame = camera_input()
-    if video_frame:
+    if video_frame is not None:
         st.session_state.video_frame = video_frame
-        st.image(video_frame, caption="Live Video Frame", width=600)  # Adjust width as needed
-
+        st.image(video_frame, caption="Live Video Frame", width=600)
+    else:
+        st.error("⚠️ No video frame captured. Please check your camera input.")
 
 # Translate Button
 if translate_mode:
     st.write("🔍 Checking session state before translation...")
+    prediction = None  # Initialize prediction variable
+
     if st.session_state.captured_image:
         processed_image = process_image(st.session_state.captured_image)
         if processed_image is not None:
             prediction = predict_sign(processed_image)
-            if prediction:
-                st.session_state.prediction = prediction
-            else:
-                st.error("⚠️ Prediction failed. Please try again.")
+
     elif st.session_state.video_frame:
         processed_image = process_image(st.session_state.video_frame)
         if processed_image is not None:
             prediction = predict_sign(processed_image)
-            if prediction:
-                st.session_state.prediction = prediction
-            else:
-                st.error("⚠️ Prediction failed. Please try again.")
-    else:
-        st.error("⚠️ No image or video frame captured. Please try again.")
 
-if st.session_state.prediction:
-    st.subheader(f"🔠 Translated Sign: **{st.session_state.prediction}**")
+    if prediction:
+        st.session_state.prediction = prediction
+        st.subheader(f"🔠 Translated Sign: **{prediction}**")
+    else:
+        st.error("⚠️ Prediction failed. Please try again.")
 
 # Clear Button
 if clear_mode:
