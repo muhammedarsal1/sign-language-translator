@@ -62,7 +62,8 @@ if live_mode:
     video_frame = camera_input()
     if video_frame:
         st.session_state.video_frame = video_frame
-        st.image(video_frame, caption="Live Video Frame", use_container_width=True)
+        st.image(video_frame, caption="Live Video Frame", width=600)  # Adjust width as needed
+
 
 # Translate Button
 if translate_mode:
