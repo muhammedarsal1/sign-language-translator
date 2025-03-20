@@ -49,7 +49,7 @@ def predict_sign(image):
         image = image / 255.0
         image = image.reshape(1, 64, 64, 3)
         predictions = model.predict(image, verbose=0)
-        predicted_label = labels[str(predictions.argmax())]
+        predicted_label = list(labels.keys())[predictions.argmax()]
         return predicted_label
     except Exception as e:
         print(f"❌ Error during prediction: {e}")
